@@ -44,9 +44,11 @@ data class PedidoRealizado(
     val codigo: String,
     val cantidadProductos: Int,
     val resumenProductos: String,
+    val itemsComprados: List<ItemCarrito>,
     val montoTotal: Double,
     val metodoPago: String,
     val comprobante: String,
     val destino: String,
-    val estado: String = "En Preparación"
+    val receptor: String,
+    val estado: String = "En Camino"
 )

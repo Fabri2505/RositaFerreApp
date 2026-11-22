@@ -1,7 +1,8 @@
 package com.grupo2.rositaferreapp.ui.pantallas
 
+import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,19 +12,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.grupo2.rositaferreapp.R
-import com.grupo2.rositaferreapp.componentes.BotonPrincipal
 import com.grupo2.rositaferreapp.datos.PedidoRealizado
 import com.grupo2.rositaferreapp.navegacion.ControladorNavegacion
 import com.grupo2.rositaferreapp.ui.theme.*
@@ -38,7 +39,51 @@ private fun formatearSolesPedido(valor: Double): String {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaPedidos(navController: ControladorNavegacion) {
+    val contexto = LocalContext.current
     val totalCarrito = navController.contarProductos()
+
+    val pedidosAnterioresRecibidos = remember {
+        listOf(
+            PedidoRealizado(
+                codigo = "#ROS-2026-88410",
+                cantidadProductos = 4,
+                resumenProductos = "2x Bolsa de Cemento Sol 42.5kg, 2x Pintura Látex Vencedor 4L",
+                itemsComprados = emptyList(),
+                montoTotal = 165.80,
+                metodoPago = "Tarjeta Crédito / Débito",
+                comprobante = "Boleta de Venta (72849102)",
+                destino = "Av. Perú 2450 - San Martín de Porres",
+                receptor = navController.nombreUsuarioActivo,
+                estado = "Pedido Recibido"
+            ),
+            PedidoRealizado(
+                codigo = "#ROS-2026-88325",
+                cantidadProductos = 2,
+                resumenProductos = "1x Juego de Llaves Mixtas Stanley, 1x Cinta Aislante 3M",
+                itemsComprados = emptyList(),
+                montoTotal = 94.50,
+                metodoPago = "Yape / Plin",
+                comprobante = "Boleta de Venta (72849102)",
+                destino = "Jr. Las Magnolias 318 - Los Olivos",
+                receptor = navController.nombreUsuarioActivo,
+                estado = "Pedido Recibido"
+            ),
+            PedidoRealizado(
+                codigo = "#ROS-2026-88190",
+                cantidadProductos = 5,
+                resumenProductos = "5x Tubo PVC Agua 1/2\" Pavco 5m",
+                itemsComprados = emptyList(),
+                montoTotal = 87.50,
+                metodoPago = "Yape / Plin",
+                comprobante = "Factura Electrónica (20601234567)",
+                destino = "Av. Próceres de la Independencia 1420 - SJL",
+                receptor = navController.nombreUsuarioActivo,
+                estado = "Pedido Recibido"
+            )
+        )
+    }
+
+    val totalOrdenes = navController.listaPedidos.size + pedidosAnterioresRecibidos.size
 
     Scaffold(
         topBar = {
@@ -98,7 +143,7 @@ fun PantallaPedidos(navController: ControladorNavegacion) {
                 Text("Pedidos Realizados", fontSize = 19.sp, fontWeight = FontWeight.ExtraBold, color = TextoOscuro)
                 Surface(color = DuraznoClaro, shape = CircleShape) {
                     Text(
-                        text = "${navController.listaPedidos.size} órdenes",
+                        text = "$totalOrdenes órdenes",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = NaranjaOscuro,
@@ -109,61 +154,100 @@ fun PantallaPedidos(navController: ControladorNavegacion) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (navController.listaPedidos.isEmpty()) {
-                Surface(
-                    color = BlancoTarjeta,
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.fillMaxWidth()
+            // 1. PEDIDOS EN CAMINO (CON SU BOTÓN DE ATENCIÓN DE RECLAMOS DEBAJO)
+            navController.listaPedidos.forEach { pedido ->
+                TarjetaPedidoGuardado(
+                    pedido = pedido,
+                    esEnCamino = true,
+                    alVerEstado = { navController.irAEstadoPedido(pedido) }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Botón rojo Atención de Reclamos vinculado a este pedido en camino
+                OutlinedButton(
+                    onClick = { navController.irAReclamo(pedido) },
+                    border = BorderStroke(1.5.dp, Color(0xFFD32F2F)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color(0xFFFFEBEE),
+                        contentColor = Color(0xFFD32F2F)
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(46.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(Icons.Default.ShoppingBag, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(48.dp))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Aún no tienes pedidos guardados", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextoOscuro)
-                        Text("Cuando confirmes una compra aparecerá aquí.", fontSize = 12.sp, color = TextoSecundario)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        BotonPrincipal(texto = "Ir a Comprar") {
-                            navController.irACatalogo()
-                        }
+                    Icon(Icons.Default.Warning, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Atención de Reclamos",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+            }
+
+            // 2. HISTORIAL ANTERIOR (PEDIDOS RECIBIDOS)
+            Text(
+                text = "Historial Anterior",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextoSecundario
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            pedidosAnterioresRecibidos.forEach { pedidoPasado ->
+                TarjetaPedidoGuardado(
+                    pedido = pedidoPasado,
+                    esEnCamino = false,
+                    alVerEstado = {
+                        Toast.makeText(
+                            contexto,
+                            "Pedido ${pedidoPasado.codigo} entregado conforme",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                }
-            } else {
-                navController.listaPedidos.forEach { pedido ->
-                    TarjetaPedidoGuardado(pedido)
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }
 }
 
 @Composable
-private fun TarjetaPedidoGuardado(pedido: PedidoRealizado) {
-    val verdeExito = Color(0xFF2E7D32)
-    val verdeFondo = Color(0xFFE8F5E9)
+private fun TarjetaPedidoGuardado(
+    pedido: PedidoRealizado,
+    esEnCamino: Boolean,
+    alVerEstado: () -> Unit
+) {
+    val colorTextoEstado = if (esEnCamino) Color(0xFF2E7D32) else AzulSecundario
+    val colorFondoEstado = if (esEnCamino) Color(0xFFE8F5E9) else ContenedorBajo
 
     Surface(
         color = BlancoTarjeta,
         shape = RoundedCornerShape(14.dp),
         shadowElevation = 2.dp,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .clickable { alVerEstado() }
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
-            // Fila 1: Código y Estado verde
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(pedido.codigo, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = TextoOscuro)
-                Surface(color = verdeFondo, shape = CircleShape) {
+                Surface(color = colorFondoEstado, shape = CircleShape) {
                     Text(
                         text = pedido.estado,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = verdeExito,
+                        color = colorTextoEstado,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
                     )
                 }
@@ -171,7 +255,6 @@ private fun TarjetaPedidoGuardado(pedido: PedidoRealizado) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Fila 2: Productos comprados
             Text(
                 text = "Productos (${pedido.cantidadProductos}): ${pedido.resumenProductos}",
                 fontSize = 12.sp,
@@ -181,7 +264,6 @@ private fun TarjetaPedidoGuardado(pedido: PedidoRealizado) {
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Fila 3: Destino y Comprobante
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Place, contentDescription = null, tint = NaranjaOscuro, modifier = Modifier.size(14.dp))
                 Spacer(modifier = Modifier.width(4.dp))
@@ -196,13 +278,17 @@ private fun TarjetaPedidoGuardado(pedido: PedidoRealizado) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = ContenedorAlto)
 
-            // Fila 4: Total pagado y entrega estimada
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Entrega est.: 3 días hábiles", fontSize = 11.sp, color = TextoSecundario)
+                Text(
+                    text = if (esEnCamino) "Toca para ver ruta GPS ›" else "Entregado conforme ✓",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (esEnCamino) AzulSecundario else Color(0xFF2E7D32)
+                )
                 Text(
                     text = "Total: S/ ${formatearSolesPedido(pedido.montoTotal)}",
                     fontSize = 16.sp,

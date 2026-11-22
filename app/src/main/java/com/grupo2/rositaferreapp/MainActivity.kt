@@ -14,10 +14,12 @@ import com.grupo2.rositaferreapp.ui.pantallas.PantallaCarrito
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaCatalogo
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaDetalleProducto
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaEntrega
+import com.grupo2.rositaferreapp.ui.pantallas.PantallaEstadoPedido
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaLogin
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaPago
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaPagoExitoso
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaPedidos
+import com.grupo2.rositaferreapp.ui.pantallas.PantallaReclamo
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaRegistro
 import com.grupo2.rositaferreapp.ui.theme.RositaFerreAppTheme
 
@@ -40,6 +42,8 @@ class MainActivity : ComponentActivity() {
                         RutaPantalla.PAGO -> PantallaPago(navController)
                         RutaPantalla.PAGO_EXITOSO -> PantallaPagoExitoso(navController)
                         RutaPantalla.PEDIDOS -> PantallaPedidos(navController)
+                        RutaPantalla.ESTADO_PEDIDO -> PantallaEstadoPedido(navController)
+                        RutaPantalla.RECLAMO -> PantallaReclamo(navController)
                     }
                 }
             }

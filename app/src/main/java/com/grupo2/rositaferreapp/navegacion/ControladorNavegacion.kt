@@ -20,7 +20,9 @@ enum class RutaPantalla {
     ENTREGA,
     PAGO,
     PAGO_EXITOSO,
-    PEDIDOS
+    PEDIDOS,
+    ESTADO_PEDIDO,
+    RECLAMO
 }
 
 class ControladorNavegacion {
@@ -34,9 +36,10 @@ class ControladorNavegacion {
         private set
 
     val listaCarrito = mutableStateListOf<ItemCarrito>()
-
-    // Lista donde se quedan guardados todos los pedidos realizados
     val listaPedidos = mutableStateListOf<PedidoRealizado>()
+
+    var pedidoSeleccionado by mutableStateOf<PedidoRealizado?>(null)
+        private set
 
     // Datos guardados del Paso 1: Modalidad de Entrega
     var esDelivery by mutableStateOf(true)
@@ -75,33 +78,42 @@ class ControladorNavegacion {
     fun irAPago() { pantallaActual = RutaPantalla.PAGO }
     fun irAPedidos() { pantallaActual = RutaPantalla.PEDIDOS }
 
+    fun irAEstadoPedido(pedido: PedidoRealizado? = listaPedidos.firstOrNull()) {
+        pedidoSeleccionado = pedido
+        pantallaActual = RutaPantalla.ESTADO_PEDIDO
+    }
+
+    fun irAReclamo(pedido: PedidoRealizado? = listaPedidos.firstOrNull()) {
+        pedidoSeleccionado = pedido
+        pantallaActual = RutaPantalla.RECLAMO
+    }
+
     fun irAPagoExitoso() {
         val totalFinal = calcularTotalProductos() + costoEnvioActivo
         val totalArticulos = contarProductos()
+        val detalleItems = listaCarrito.joinToString(", ") { "${it.cantidad}x${it.producto.nombre}" }
+        val copiaItems = listaCarrito.toList()
 
-        // Armamos un texto simple con los nombres comprados (ej: "2x Taladro, 1x Cemento")
-        val detalleItems = listaCarrito.joinToString(", ") { "${it.cantidad}x ${it.producto.nombre}" }
-
-        // Generamos código único para el pedido
         val numeroPedido = 88492 + listaPedidos.size
         val codigoNuevo = "#ROS-2026-$numeroPedido"
 
         ultimoMontoPagado = totalFinal
         ultimoCodigoPedido = codigoNuevo
 
-        // Guardamos el pedido en el historial (al inicio de la lista)
-        listaPedidos.add(
-            index = 0,
-            element = PedidoRealizado(
-                codigo = codigoNuevo,
-                cantidadProductos = totalArticulos,
-                resumenProductos = detalleItems,
-                montoTotal = totalFinal,
-                metodoPago = metodoPagoSeleccionado,
-                comprobante = "$tipoComprobante ($documentoComprobante)",
-                destino = if (esDelivery) "$direccionEntrega - $distritoEntrega" else "Recojo en Tienda Rosita"
-            )
+        val nuevoPedido = PedidoRealizado(
+            codigo = codigoNuevo,
+            cantidadProductos = totalArticulos,
+            resumenProductos = detalleItems,
+            itemsComprados = copiaItems,
+            montoTotal = totalFinal,
+            metodoPago = metodoPagoSeleccionado,
+            comprobante = "$tipoComprobante ($documentoComprobante)",
+            destino = if (esDelivery) "$direccionEntrega -$distritoEntrega" else "Recojo en Tienda Rosita",
+            receptor = nombreReceptor
         )
+
+        listaPedidos.add(index = 0, element = nuevoPedido)
+        pedidoSeleccionado = nuevoPedido
 
         listaCarrito.clear()
         pantallaActual = RutaPantalla.PAGO_EXITOSO
