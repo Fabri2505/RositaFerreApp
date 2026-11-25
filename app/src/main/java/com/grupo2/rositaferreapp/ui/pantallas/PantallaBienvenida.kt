@@ -1,6 +1,7 @@
 package com.grupo2.rositaferreapp.ui.pantallas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -141,6 +142,16 @@ fun PantallaBienvenida(navController: ControladorNavegacion) {
 
         Spacer(modifier = Modifier.height(24.dp))
         Text("RUC: 20601234567 • Lima, Perú", fontSize = 12.sp, color = Color.Gray)
+
+        Spacer(modifier = Modifier.height(30.dp))
+        // Botón sutil para el administrador
+        Text(
+            text = "Acceso Administrativo",
+            fontSize = 11.sp,
+            color = AzulSecundario,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.clickable { navController.irALoginAdmin() }
+        )
     }
 }
 

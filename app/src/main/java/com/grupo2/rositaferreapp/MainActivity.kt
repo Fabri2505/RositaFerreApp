@@ -16,8 +16,11 @@ import com.grupo2.rositaferreapp.ui.pantallas.PantallaDetalleProducto
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaEntrega
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaEstadoPedido
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaLogin
+import com.grupo2.rositaferreapp.ui.pantallas.PantallaLoginAdmin
+import com.grupo2.rositaferreapp.ui.pantallas.PantallaAdminProductos
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaPago
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaPagoExitoso
+import com.grupo2.rositaferreapp.ui.pantallas.PantallaPanelAdmin
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaPedidos
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaReclamo
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaRegistro
@@ -34,6 +37,9 @@ class MainActivity : ComponentActivity() {
                     when (navController.pantallaActual) {
                         RutaPantalla.BIENVENIDA -> PantallaBienvenida(navController)
                         RutaPantalla.LOGIN -> PantallaLogin(navController)
+                        RutaPantalla.LOGIN_ADMIN -> PantallaLoginAdmin(navController)
+                        RutaPantalla.PANEL_ADMIN -> PantallaPanelAdmin(navController)
+                        RutaPantalla.ADMIN_PRODUCTOS -> PantallaAdminProductos(navController)
                         RutaPantalla.REGISTRO -> PantallaRegistro(navController)
                         RutaPantalla.CATALOGO -> PantallaCatalogo(navController)
                         RutaPantalla.DETALLE -> PantallaDetalleProducto(navController)

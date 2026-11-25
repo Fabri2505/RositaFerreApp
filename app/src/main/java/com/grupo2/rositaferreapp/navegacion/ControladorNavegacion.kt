@@ -13,6 +13,9 @@ import com.grupo2.rositaferreapp.datos.Producto
 enum class RutaPantalla {
     BIENVENIDA,
     LOGIN,
+    LOGIN_ADMIN,
+    PANEL_ADMIN,
+    ADMIN_PRODUCTOS,
     REGISTRO,
     CATALOGO,
     DETALLE,
@@ -61,6 +64,9 @@ class ControladorNavegacion {
 
     fun irABienvenida() { pantallaActual = RutaPantalla.BIENVENIDA }
     fun irALogin() { pantallaActual = RutaPantalla.LOGIN }
+    fun irALoginAdmin() { pantallaActual = RutaPantalla.LOGIN_ADMIN }
+    fun irAPanelAdmin() { pantallaActual = RutaPantalla.PANEL_ADMIN }
+    fun irAAdminProductos() { pantallaActual = RutaPantalla.ADMIN_PRODUCTOS }
     fun irARegistro() { pantallaActual = RutaPantalla.REGISTRO }
 
     fun irACatalogo(nombreUsuario: String = nombreUsuarioActivo) {

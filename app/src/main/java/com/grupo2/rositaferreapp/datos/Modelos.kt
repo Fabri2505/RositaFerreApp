@@ -2,7 +2,8 @@ package com.grupo2.rositaferreapp.datos
 
 enum class TipoCliente {
     PERSONA,
-    EMPRESA
+    EMPRESA,
+    ADMIN
 }
 
 data class Usuario(
