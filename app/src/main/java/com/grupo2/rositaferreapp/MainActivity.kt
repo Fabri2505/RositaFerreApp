@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.grupo2.rositaferreapp.navegacion.ControladorNavegacion
 import com.grupo2.rositaferreapp.navegacion.RutaPantalla
+import com.grupo2.rositaferreapp.ui.pantallas.PantallaAdminPedidos
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaBienvenida
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaCarrito
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaCatalogo
@@ -22,6 +23,9 @@ import com.grupo2.rositaferreapp.ui.pantallas.PantallaPedidos
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaReclamo
 import com.grupo2.rositaferreapp.ui.pantallas.PantallaRegistro
 import com.grupo2.rositaferreapp.ui.theme.RositaFerreAppTheme
+import com.grupo2.rositaferreapp.ui.pantallas.PantallaLoginAdmin
+import com.grupo2.rositaferreapp.ui.pantallas.PantallaAdminProductos
+import com.grupo2.rositaferreapp.ui.pantallas.PantallaPanelAdmin
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +38,9 @@ class MainActivity : ComponentActivity() {
                     when (navController.pantallaActual) {
                         RutaPantalla.BIENVENIDA -> PantallaBienvenida(navController)
                         RutaPantalla.LOGIN -> PantallaLogin(navController)
+                        RutaPantalla.LOGIN_ADMIN -> PantallaLoginAdmin(navController)
+                        RutaPantalla.PANEL_ADMIN -> PantallaPanelAdmin(navController)
+                        RutaPantalla.ADMIN_PRODUCTOS -> PantallaAdminProductos(navController)
                         RutaPantalla.REGISTRO -> PantallaRegistro(navController)
                         RutaPantalla.CATALOGO -> PantallaCatalogo(navController)
                         RutaPantalla.DETALLE -> PantallaDetalleProducto(navController)
@@ -44,6 +51,7 @@ class MainActivity : ComponentActivity() {
                         RutaPantalla.PEDIDOS -> PantallaPedidos(navController)
                         RutaPantalla.ESTADO_PEDIDO -> PantallaEstadoPedido(navController)
                         RutaPantalla.RECLAMO -> PantallaReclamo(navController)
+                        RutaPantalla.ADMIN_PEDIDOS -> PantallaAdminPedidos(navController)
                     }
                 }
             }

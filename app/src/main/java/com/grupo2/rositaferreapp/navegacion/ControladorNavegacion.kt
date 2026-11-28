@@ -13,6 +13,9 @@ import com.grupo2.rositaferreapp.datos.Producto
 enum class RutaPantalla {
     BIENVENIDA,
     LOGIN,
+    LOGIN_ADMIN,
+    PANEL_ADMIN,
+    ADMIN_PRODUCTOS,
     REGISTRO,
     CATALOGO,
     DETALLE,
@@ -22,7 +25,8 @@ enum class RutaPantalla {
     PAGO_EXITOSO,
     PEDIDOS,
     ESTADO_PEDIDO,
-    RECLAMO
+    RECLAMO,
+    ADMIN_PEDIDOS
 }
 
 class ControladorNavegacion {
@@ -61,7 +65,11 @@ class ControladorNavegacion {
 
     fun irABienvenida() { pantallaActual = RutaPantalla.BIENVENIDA }
     fun irALogin() { pantallaActual = RutaPantalla.LOGIN }
+    fun irALoginAdmin() { pantallaActual = RutaPantalla.LOGIN_ADMIN }
+    fun irAPanelAdmin() { pantallaActual = RutaPantalla.PANEL_ADMIN }
+    fun irAAdminProductos() { pantallaActual = RutaPantalla.ADMIN_PRODUCTOS }
     fun irARegistro() { pantallaActual = RutaPantalla.REGISTRO }
+    fun irAAdminPedidos() { pantallaActual = RutaPantalla.ADMIN_PEDIDOS }
 
     fun irACatalogo(nombreUsuario: String = nombreUsuarioActivo) {
         nombreUsuarioActivo = nombreUsuario
@@ -87,6 +95,7 @@ class ControladorNavegacion {
         pedidoSeleccionado = pedido
         pantallaActual = RutaPantalla.RECLAMO
     }
+
 
     fun irAPagoExitoso() {
         val totalFinal = calcularTotalProductos() + costoEnvioActivo

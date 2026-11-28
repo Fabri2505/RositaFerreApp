@@ -136,14 +136,16 @@ fun PantallaLogin(navController: ControladorNavegacion) {
             OutlinedTextField(
                 value = documento,
                 onValueChange = {
-                    if (it.length <= maxDigitos && it.all { c -> c.isDigit() }) {
+                    // SE AGREGÓ: "|| it == "admin"" para permitir la palabra admin
+                    if ((it.length <= maxDigitos && it.all { c -> c.isDigit() }) || it == "admin") {
                         documento = it
                         mensajeError = null
                     }
                 },
                 placeholder = { Text(if (esPersona) "Ej. 12345678" else "Ej. 20601234567", color = Color.Gray) },
                 leadingIcon = { Icon(Icons.Default.AccountBox, contentDescription = null, tint = NaranjaOscuro) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                // SE CAMBIÓ: De Number a Text para poder escribir la palabra "admin"
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 singleLine = true,
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -199,7 +201,13 @@ fun PantallaLogin(navController: ControladorNavegacion) {
                         mensajeError = "Ingresa tu contraseña."
                     } else {
                         val nombre = GestorUsuarios.iniciarSesion(contexto, documento, clave)
-                        if (nombre != null) {
+
+                        // SE AGREGÓ: Validación para el administrador
+                        if (nombre == "ADMINISTRADOR") {
+                            Toast.makeText(contexto, "Panel de Administración", Toast.LENGTH_SHORT).show()
+                            // Aquí podrías en el futuro navegar a una PantallaAdmin
+                            navController.irACatalogo(nombre)
+                        } else if (nombre != null) {
                             Toast.makeText(contexto, "Bienvenido $nombre", Toast.LENGTH_SHORT).show()
                             navController.irACatalogo(nombre)
                         } else {

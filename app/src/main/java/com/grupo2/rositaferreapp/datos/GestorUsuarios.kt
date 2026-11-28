@@ -8,6 +8,10 @@ object GestorUsuarios {
     // Función 1: Valida credenciales básicas por defecto o usuarios registrados
     fun iniciarSesion(context: Context, documento: String, clave: String): String? {
         // Credenciales básicas listas para pruebas
+        if (documento == "admin" && clave == "admin123") {
+            return "ADMINISTRADOR"
+        }
+
         if (documento == "12345678" && clave == "1234") {
             return "Bienvenido Jose Luis Paucar"
         }
@@ -37,8 +41,9 @@ object GestorUsuarios {
         }
     }
 
-    // Función 3: Valida si la longitud del documento es correcta (8 para DNI, 11 para RUC)
+    // Función 3: Valida si la longitud del documento es correcta (8 para DNI, 11 para RUC o "admin")
     fun esDocumentoValido(documento: String, tipo: TipoCliente): Boolean {
+        if (documento == "admin") return true
         return if (tipo == TipoCliente.PERSONA) {
             documento.length == 8
         } else {

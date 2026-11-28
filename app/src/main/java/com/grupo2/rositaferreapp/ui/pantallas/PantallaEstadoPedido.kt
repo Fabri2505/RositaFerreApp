@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.grupo2.rositaferreapp.R
+import com.grupo2.rositaferreapp.datos.GestorPedidos
 import com.grupo2.rositaferreapp.navegacion.ControladorNavegacion
 import com.grupo2.rositaferreapp.ui.theme.*
 
@@ -39,7 +40,19 @@ import com.grupo2.rositaferreapp.ui.theme.*
 @Composable
 fun PantallaEstadoPedido(navController: ControladorNavegacion) {
     val contexto = LocalContext.current
-    val pedido = navController.pedidoSeleccionado
+    val pedidoAdmin = GestorPedidos.pedidoSeleccionado
+    val pedidoLocal = navController.pedidoSeleccionado
+
+    val estadoActual = pedidoAdmin?.estado ?: "En Camino"
+    val esTerminado = estadoActual == "Pedido Recibido"
+
+    val codigoMostrar = pedidoAdmin?.codigo ?: pedidoLocal?.codigo ?: "#ROS-2026-88492"
+    val destinoMostrar = pedidoAdmin?.destino ?: pedidoLocal?.destino ?: "${navController.direccionEntrega} - ${navController.distritoEntrega}"
+    val receptorMostrar = pedidoAdmin?.receptor ?: pedidoLocal?.receptor ?: navController.nombreReceptor
+    val cantidadMostrar = pedidoAdmin?.cantidadProductos ?: pedidoLocal?.cantidadProductos ?: 0
+    val resumenMostrar = pedidoAdmin?.resumenProductos ?: pedidoLocal?.resumenProductos ?: "Productos de Ferretería Rosita"
+    val choferMostrar = pedidoAdmin?.chofer?.takeIf { it != "Sin asignar" } ?: "Manuel Quispe Torres"
+    val placaMostrar = pedidoAdmin?.placa?.takeIf { it.isNotBlank() } ?: "B9X-721"
 
     Scaffold(
         topBar = {
@@ -84,9 +97,9 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            // 1. TARJETA SUPERIOR: CÓDIGO Y TIEMPO APROXIMADO DE DESTINO
+            // 1. TARJETA SUPERIOR: CÓDIGO Y ESTADO / TIEMPO DE DESTINO
             Surface(
-                color = DuraznoClaro,
+                color = if (esTerminado) Color(0xFFE8F5E9) else DuraznoClaro,
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -96,9 +109,12 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Surface(color = NaranjaPrincipal, shape = CircleShape) {
+                        Surface(
+                            color = if (esTerminado) Color(0xFF2E7D32) else NaranjaPrincipal,
+                            shape = CircleShape
+                        ) {
                             Text(
-                                text = "• En Camino",
+                                text = if (esTerminado) "• Terminado" else "• $estadoActual",
                                 color = Color.White,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
@@ -106,7 +122,7 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
                             )
                         }
                         Text(
-                            text = pedido?.codigo ?: "#ROS-2026-88492",
+                            text = codigoMostrar,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextoOscuro
@@ -121,11 +137,26 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
                         verticalAlignment = Alignment.Bottom
                     ) {
                         Column {
-                            Text("TIEMPO APROXIMADO DE DESTINO", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = NaranjaOscuro)
-                            Text("4:00 PM - 6:20 PM", fontSize = 19.sp, fontWeight = FontWeight.ExtraBold, color = TextoOscuro)
+                            Text(
+                                text = if (esTerminado) "ESTADO DE ENTREGA" else "TIEMPO APROXIMADO DE DESTINO",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (esTerminado) Color(0xFF2E7D32) else NaranjaOscuro
+                            )
+                            Text(
+                                text = if (esTerminado) "Pedido Entregado" else "4:00 PM - 6:20 PM",
+                                fontSize = 19.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = TextoOscuro
+                            )
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("80%", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = NaranjaOscuro)
+                            Text(
+                                text = if (esTerminado) "100%" else "80%",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (esTerminado) Color(0xFF2E7D32) else NaranjaOscuro
+                            )
                             Text("Progreso", fontSize = 10.sp, color = TextoSecundario)
                         }
                     }
@@ -141,9 +172,12 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
                     ) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth(0.80f)
+                                .fillMaxWidth(if (esTerminado) 1f else 0.80f)
                                 .fillMaxHeight()
-                                .background(NaranjaPrincipal, CircleShape)
+                                .background(
+                                    color = if (esTerminado) Color(0xFF2E7D32) else NaranjaPrincipal,
+                                    shape = CircleShape
+                                )
                         )
                     }
                 }
@@ -165,7 +199,12 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Seguimiento del Pedido", fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = TextoOscuro)
-                        Text("3 Etapas", fontSize = 11.sp, color = TextoSecundario)
+                        Text(
+                            text = if (esTerminado) "Terminado" else "3 Etapas",
+                            fontSize = 11.sp,
+                            fontWeight = if (esTerminado) FontWeight.Bold else FontWeight.Normal,
+                            color = if (esTerminado) Color(0xFF2E7D32) else TextoSecundario
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -187,10 +226,11 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
                     )
 
                     FilaEtapaSimple(
-                        titulo = "3. En Camino",
-                        descripcion = "Tu pedido va en ruta hacia tu dirección.",
-                        completado = false,
-                        activo = true,
+                        titulo = if (esTerminado) "3. Terminado" else "3. En Camino",
+                        descripcion = if (esTerminado) "Pedido entregado y recibido correctamente."
+                        else "Tu pedido va en ruta hacia tu dirección.",
+                        completado = esTerminado,
+                        activo = !esTerminado,
                         mostrarLineaAbajo = false
                     )
                 }
@@ -198,7 +238,7 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 3. MAPA GPS EN CAMINO + CONDUCTOR Y PLACA
+            // 3. MAPA GPS EN CAMINO (Se oculta si ya es "Pedido Recibido") + CONDUCTOR Y PLACA
             Surface(
                 color = BlancoTarjeta,
                 shape = RoundedCornerShape(14.dp),
@@ -206,30 +246,32 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Ubicación GPS en Camino", fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = TextoOscuro)
-                        Surface(color = Color(0xFFE8F5E9), shape = CircleShape) {
-                            Text(
-                                text = "En Ruta",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E7D32),
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                            )
+                    if (!esTerminado) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Ubicación GPS en Camino", fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = TextoOscuro)
+                            Surface(color = Color(0xFFE8F5E9), shape = CircleShape) {
+                                Text(
+                                    text = "En Ruta",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF2E7D32),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                )
+                            }
                         }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        MapaRutaEnCamino()
+
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    MapaRutaEnCamino()
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Datos sencillos del Conductor y Placa
+                    // Datos sencillos del Conductor y Placa (siempre visibles)
                     Surface(color = ContenedorBajo, shape = RoundedCornerShape(10.dp), modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier.padding(12.dp),
@@ -248,11 +290,11 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column {
                                     Text("Conductor Asignado", fontSize = 10.sp, color = TextoSecundario)
-                                    Text("Manuel Quispe Torres", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextoOscuro)
+                                    Text(choferMostrar, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextoOscuro)
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Surface(color = BlancoTarjeta, shape = RoundedCornerShape(4.dp)) {
                                         Text(
-                                            text = "Placa: B9X-721",
+                                            text = "Placa: $placaMostrar",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.ExtraBold,
                                             color = NaranjaOscuro,
@@ -264,7 +306,7 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
 
                             IconButton(
                                 onClick = {
-                                    Toast.makeText(contexto, "Llamando al conductor Manuel Quispe...", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(contexto, "Llamando al conductor $choferMostrar...", Toast.LENGTH_SHORT).show()
                                 },
                                 modifier = Modifier
                                     .size(38.dp)
@@ -287,15 +329,14 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
-                    val cantidad = pedido?.cantidadProductos ?: 0
-                    Text("Pedidos Solicitados ($cantidad)", fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = TextoOscuro)
+                    Text("Pedidos Solicitados ($cantidadMostrar)", fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = TextoOscuro)
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    val items = pedido?.itemsComprados ?: emptyList()
+                    val items = pedidoLocal?.itemsComprados ?: emptyList()
                     if (items.isEmpty()) {
                         Text(
-                            text = pedido?.resumenProductos ?: "Productos de Ferretería Rosita",
+                            text = resumenMostrar,
                             fontSize = 12.sp,
                             color = TextoOscuro
                         )
@@ -357,13 +398,13 @@ fun PantallaEstadoPedido(navController: ControladorNavegacion) {
                             Column {
                                 Text("PUNTO DE ENTREGA", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = NaranjaOscuro)
                                 Text(
-                                    text = pedido?.destino ?: "${navController.direccionEntrega} - ${navController.distritoEntrega}",
+                                    text = destinoMostrar,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = TextoOscuro
                                 )
                                 Text(
-                                    text = "Recibe: ${pedido?.receptor ?: navController.nombreReceptor}",
+                                    text = "Recibe: $receptorMostrar",
                                     fontSize = 11.sp,
                                     color = TextoSecundario
                                 )

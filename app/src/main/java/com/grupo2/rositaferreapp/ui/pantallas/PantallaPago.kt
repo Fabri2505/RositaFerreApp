@@ -31,6 +31,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.grupo2.rositaferreapp.R
+import com.grupo2.rositaferreapp.datos.GestorPedidos
+import com.grupo2.rositaferreapp.datos.PedidoAdmin
 import com.grupo2.rositaferreapp.navegacion.ControladorNavegacion
 import com.grupo2.rositaferreapp.ui.theme.*
 import kotlin.math.roundToInt
@@ -122,19 +124,43 @@ fun PantallaPago(navController: ControladorNavegacion) {
                                     Toast.LENGTH_SHORT
                                 ).show()
                             } else {
-                        // Guardamos los datos para el Resumen Final
-                        navController.metodoPagoSeleccionado = if (esBilleteraDigital) "Yape / Plin" else "Tarjeta Crédito / Débito"
-                        navController.detallePagoGuardado = if (esBilleteraDigital) {
-                            "Op. N° $codigoOperacion"
-                        } else {
-                            "Terminada en **** ${numeroTarjeta.takeLast(4)}"
-                        }
-                        navController.tipoComprobante = if (esBoleta) "Boleta de Venta" else "Factura Electrónica"
-                        navController.documentoComprobante = documentoCliente
-                        navController.nombreComprobante = nombreRazonSocial
+                                // 1. Guardamos los datos para el Resumen Final
+                                val metodoElegido = if (esBilleteraDigital) "Yape / Plin" else "Tarjeta Crédito / Débito"
+                                val comprobanteElegido = if (esBoleta) "Boleta de Venta" else "Factura Electrónica"
 
-                        navController.irAPagoExitoso()
-                    }
+                                navController.metodoPagoSeleccionado = metodoElegido
+                                navController.detallePagoGuardado = if (esBilleteraDigital) {
+                                    "Op. N° $codigoOperacion"
+                                } else {
+                                    "Terminada en **** ${numeroTarjeta.takeLast(4)}"
+                                }
+                                navController.tipoComprobante = comprobanteElegido
+                                navController.documentoComprobante = documentoCliente
+                                navController.nombreComprobante = nombreRazonSocial
+
+                                // 2. Registramos la compra real en GestorPedidos (lo ven Cliente y Admin al instante)
+                                val codigoGenerado = "ROS-${(10000..99999).random()}"
+                                val resumenItems = navController.listaCarrito.joinToString(", ") {
+                                    "${it.cantidad}x ${it.producto.nombre}"
+                                }.ifBlank { "Compra en Ferretería Rosita ($totalUnidades art.)" }
+
+                                val nuevoPedido = PedidoAdmin(
+                                    codigo = codigoGenerado,
+                                    usuario = navController.nombreUsuarioActivo.ifBlank { nombreRazonSocial },
+                                    cantidadProductos = totalUnidades,
+                                    resumenProductos = resumenItems,
+                                    montoTotal = totalFinal,
+                                    metodoPago = metodoElegido,
+                                    comprobante = comprobanteElegido,
+                                    destino = "Entrega programada - Lima",
+                                    receptor = navController.nombreReceptor.ifBlank { nombreRazonSocial },
+                                    estado = "Pendiente de Despacho"
+                                )
+                                GestorPedidos.agregarPedido(nuevoPedido)
+
+                                // 3. Navegamos a la pantalla de Pago Exitoso
+                                navController.irAPagoExitoso()
+                            }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = NaranjaPrincipal),
                         shape = RoundedCornerShape(10.dp),
@@ -237,7 +263,6 @@ fun PantallaPago(navController: ControladorNavegacion) {
                         }
                     }
 
-                    // Lista desplegable de productos
                     if (verDetallePedido) {
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = ContenedorAlto)
                         navController.listaCarrito.forEach { item ->
@@ -309,7 +334,6 @@ fun PantallaPago(navController: ControladorNavegacion) {
                         }
                     }
 
-                    // Badges Yape y Plin
                     Row(modifier = Modifier.padding(start = 48.dp, top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Surface(color = Color(0xFF742284), shape = CircleShape) {
                             Text("• Yape", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp))
@@ -319,17 +343,14 @@ fun PantallaPago(navController: ControladorNavegacion) {
                         }
                     }
 
-                    // Contenido desplegado cuando se elige Yape / Plin
                     if (esBilleteraDigital) {
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Caja con QR y Número Oficial
                         Surface(color = ContenedorBajo, shape = RoundedCornerShape(10.dp), modifier = Modifier.fillMaxWidth()) {
                             Row(
                                 modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // QR visual sencillo
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Box(
                                         modifier = Modifier
@@ -368,7 +389,6 @@ fun PantallaPago(navController: ControladorNavegacion) {
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // Código de operación (6 dígitos)
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("Código de Operación (6 dígitos)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextoOscuro)
                             Text("Obligatorio", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = NaranjaOscuro)
@@ -386,7 +406,6 @@ fun PantallaPago(navController: ControladorNavegacion) {
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // Adjuntar comprobante opcional
                         Surface(color = ContenedorBajo, shape = RoundedCornerShape(10.dp), modifier = Modifier.fillMaxWidth()) {
                             Row(
                                 modifier = Modifier.padding(10.dp),
@@ -450,7 +469,6 @@ fun PantallaPago(navController: ControladorNavegacion) {
                         }
                     }
 
-                    // Logos sencillos de tarjetas
                     Row(modifier = Modifier.padding(start = 48.dp, top = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         BadgeTarjeta("VISA", AzulSecundario)
                         BadgeTarjeta("MC", Color(0xFFD32F2F))
@@ -458,7 +476,6 @@ fun PantallaPago(navController: ControladorNavegacion) {
                         BadgeTarjeta("DINERS", TextoSecundario)
                     }
 
-                    // Formulario simple de tarjeta cuando está seleccionado
                     if (!esBilleteraDigital) {
                         Spacer(modifier = Modifier.height(12.dp))
                         OutlinedTextField(
@@ -510,7 +527,6 @@ fun PantallaPago(navController: ControladorNavegacion) {
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Selector Boleta de Venta vs Factura Electrónica
                     Surface(color = ContenedorBajo, shape = RoundedCornerShape(10.dp), modifier = Modifier.fillMaxWidth()) {
                         Row(modifier = Modifier.padding(4.dp)) {
                             TabComprobante("Boleta de Venta", esBoleta, Modifier.weight(1f)) {
